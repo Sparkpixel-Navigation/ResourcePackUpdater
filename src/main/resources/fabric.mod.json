@@ -2,31 +2,27 @@
   "schemaVersion": 1,
   "id": "resourcepackupdater",
   "version": "${version}",
-  "name": "Resource Pack Updating Utility",
-  "description": "Updates a resource pack at game launch, or when requested.",
+  "name": "Resource Pack Updater",
+  "description": "A mod that updates resource packs to newer versions",
   "authors": [
-    "Zbx1425"
+    "Hexomod"
   ],
   "contact": {
-    "homepage": "https://www.zbx1425.cn"
+    "homepage": "https://github.com/Hexomod-it/ResourcePackUpdater",
+    "sources": "https://github.com/Hexomod-it/ResourcePackUpdater"
   },
   "license": "MIT",
-  "icon": "icon.png",
+  "icon": "assets/resourcepackupdater/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "cn.zbx1425.resourcepackupdater.ResourcePackUpdater"
-    ],
-    "modmenu": [
-      "cn.zbx1425.resourcepackupdater.ModMenuApiImpl"
+      "it.hexomod.resourcepackupdater.ResourcePackUpdater"
     ]
   },
   "depends": {
-    "fabricloader": ">=0.11.7",
-    "fabric": "*",
-    "minecraft": ">=1.17"
-  },
-  "mixins": [
-    "resourcepackupdater.mixins.json"
-  ]
+    "fabricloader": ">=0.14.21",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
 }
