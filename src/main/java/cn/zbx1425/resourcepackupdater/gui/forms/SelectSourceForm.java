@@ -54,7 +54,7 @@ public class SelectSourceForm implements GlScreenForm {
 
     @Override
     public boolean shouldStopPausing() {
-        var glfwWindow = Minecraft.getInstance().getWindow().getWindow();
+        long glfwWindow = Minecraft.getInstance().getWindow().getWindow();
         if (InputConstants.isKeyDown(glfwWindow, InputConstants.KEY_UP) || InputConstants.isKeyDown(glfwWindow, InputConstants.KEY_W)) {
             if (heldKey != InputConstants.KEY_UP && heldKey != InputConstants.KEY_W) {
                 selectedIndex = Math.max(0, selectedIndex - 1);

@@ -4,12 +4,9 @@ import cn.zbx1425.resourcepackupdater.ResourcePackUpdater;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -35,19 +32,25 @@ public class DownloadTask {
     }
 
     public void runBlocking(OutputStream target) throws IOException {
-        // ResourcePackUpdater.LOGGER.info("Starting download: " + fileName);
-        HttpResponse<InputStream> httpResponse = sendHttpRequest(requestUri);
+        HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", "ResourcePackUpdater/" + ResourcePackUpdater.MOD_VERSION + " +https://www.zbx1425.cn");
+        connection.setRequestProperty("Accept-Encoding", "gzip");
+        connection.setConnectTimeout(20000);
+        connection.setReadTimeout(20000);
 
-        if (httpResponse.statusCode() >= 400) {
-            throw new IOException("Server returned HTTP " + httpResponse.statusCode() + " "
-                    + new String(httpResponse.body().readAllBytes(), StandardCharsets.UTF_8));
+        if (connection.getResponseCode() >= 400) {
+            throw new IOException("Server returned HTTP " + connection.getResponseCode() + " "
+                    + new String(IOUtils.toByteArray(connection.getErrorStream()), StandardCharsets.UTF_8));
         }
 
-        totalBytes = Long.parseLong(httpResponse.headers().firstValue("Content-Length").orElse(Long.toString(expectedSize)));
+        totalBytes = connection.getContentLengthLong();
+        if (totalBytes == -1) totalBytes = expectedSize;
         final long[] accountedAmount = {0};
 
         try {
-            try (BufferedOutputStream bos = new BufferedOutputStream(target); InputStream inputStream = unwrapHttpResponse(httpResponse)) {
+            try (BufferedOutputStream bos = new BufferedOutputStream(target);
+                 InputStream inputStream = unwrapHttpResponse(connection)) {
                 final ProgressOutputStream pOfs = new ProgressOutputStream(bos, new ProgressOutputStream.WriteListener() {
                     final long noticeDivisor = 8192;
 
@@ -72,42 +75,14 @@ public class DownloadTask {
         downloadedBytes = totalBytes;
     }
 
-    public static HttpResponse<InputStream> sendHttpRequest(URI requestUri) throws IOException {
-        /*
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] digest = md5.digest((url.getPath() + "?REALLY-BAD-VALIDATION-IDEA")
-                    .getBytes(StandardCharsets.UTF_8));
-            String digestStr = StringUtils.stripEnd(Base64.getEncoder().encodeToString(digest).replace('+', '-').replace('/', '_'), "=");
-            requestUri = new URIBuilder(url.toURI()).addParameter("md5", digestStr).build();
-        } catch (Exception ex) {
-            throw new IOException(ex);
-        }
-         */
-
-        HttpRequest httpRequest = HttpRequest.newBuilder(requestUri)
-                .timeout(Duration.ofSeconds(20))
-                .setHeader("User-Agent", "ResourcePackUpdater/" + ResourcePackUpdater.MOD_VERSION + " +https://www.zbx1425.cn")
-                .setHeader("Accept-Encoding", "gzip")
-                .GET()
-                .build();
-        HttpResponse<InputStream> httpResponse;
-        try {
-            httpResponse = ResourcePackUpdater.HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        }
-        return httpResponse;
-    }
-
-    public static InputStream unwrapHttpResponse(HttpResponse<InputStream> response) throws IOException {
-        String contentEncoding = response.headers().firstValue("Content-Encoding").orElse("").toLowerCase(Locale.ROOT);
-        if ("".equals(contentEncoding)) {
-            return response.body();
-        } else if ("gzip".equals(contentEncoding)) {
-            return new GZIPInputStream(response.body());
-        } else if ("deflate".equals(contentEncoding)) {
-            return new InflaterInputStream(response.body());
+    private static InputStream unwrapHttpResponse(HttpURLConnection connection) throws IOException {
+        String contentEncoding = connection.getContentEncoding();
+        if (contentEncoding == null || contentEncoding.isEmpty()) {
+            return connection.getInputStream();
+        } else if ("gzip".equalsIgnoreCase(contentEncoding)) {
+            return new GZIPInputStream(connection.getInputStream());
+        } else if ("deflate".equalsIgnoreCase(contentEncoding)) {
+            return new InflaterInputStream(connection.getInputStream());
         } else {
             throw new IOException("Unsupported Content-Encoding: " + contentEncoding);
         }
