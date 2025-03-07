@@ -43,7 +43,7 @@ public class ExceptionForm implements GlScreenForm {
 
     @Override
     public boolean shouldStopPausing() {
-        var glfwWindow = Minecraft.getInstance().getWindow().getWindow();
+        long glfwWindow = Minecraft.getInstance().getWindow().getWindow();
 
         final int LOG_LINE_HEIGHT = 20;
         float logBegin = 60 + LOG_LINE_HEIGHT * 3 + 40;

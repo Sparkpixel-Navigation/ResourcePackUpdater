@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 public class DownloadTask {
 
@@ -101,10 +102,14 @@ public class DownloadTask {
 
     public static InputStream unwrapHttpResponse(HttpResponse<InputStream> response) throws IOException {
         String contentEncoding = response.headers().firstValue("Content-Encoding").orElse("").toLowerCase(Locale.ROOT);
-        return switch (contentEncoding) {
-            case "" -> response.body();
-            case "gzip" -> new GZIPInputStream(response.body());
-            default -> throw new IOException("Unsupported Content-Encoding: " + contentEncoding);
-        };
+        if ("".equals(contentEncoding)) {
+            return response.body();
+        } else if ("gzip".equals(contentEncoding)) {
+            return new GZIPInputStream(response.body());
+        } else if ("deflate".equals(contentEncoding)) {
+            return new InflaterInputStream(response.body());
+        } else {
+            throw new IOException("Unsupported Content-Encoding: " + contentEncoding);
+        }
     }
 }

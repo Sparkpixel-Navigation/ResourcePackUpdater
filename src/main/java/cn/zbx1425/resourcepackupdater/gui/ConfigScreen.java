@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ConfigScreen extends Screen {
 
@@ -63,7 +64,7 @@ public class ConfigScreen extends Screen {
     }
 
     private void updateBtnEnable() {
-        for (var entry : sourceButtons.entrySet()) {
+        for (Map.Entry<Config.SourceProperty, Button> entry : sourceButtons.entrySet()) {
             entry.getValue().active = !ResourcePackUpdater.CONFIG.selectedSource.value.equals(entry.getKey());
         }
     }
