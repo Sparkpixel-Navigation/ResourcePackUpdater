@@ -5,15 +5,12 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -79,22 +76,17 @@ public class Config {
             remoteConfig = new JsonObject();
         } else {
             try {
-                HttpRequest httpRequest = HttpRequest.newBuilder(new URI(remoteConfigUrl.value))
-                        .timeout(Duration.ofSeconds(10))
-                        .setHeader("User-Agent", "ResourcePackUpdater/" + ResourcePackUpdater.MOD_VERSION + " +https://www.zbx1425.cn")
-                        .setHeader("Accept-Encoding", "gzip")
-                        .GET()
-                        .build();
-                HttpResponse<String> httpResponse;
-                try {
-                    httpResponse = ResourcePackUpdater.HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-                } catch (InterruptedException ex) {
-                    throw new IOException(ex);
+                URL url = new URL(remoteConfigUrl.value);
+                try (InputStream inputStream = url.openStream();
+                     InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line);
+                    }
+                    remoteConfig = (JsonObject) ResourcePackUpdater.JSON_PARSER.parse(stringBuilder.toString());
                 }
-                if (httpResponse.statusCode() != 200) {
-                    throw new IOException("HTTP " + httpResponse.statusCode() + " " + httpResponse.body());
-                }
-                remoteConfig = (JsonObject) ResourcePackUpdater.JSON_PARSER.parse(httpResponse.body());
             } catch (Exception ex) {
                 throw new IOException(ex);
             }

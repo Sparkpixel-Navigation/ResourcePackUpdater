@@ -13,11 +13,10 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,16 +115,25 @@ public class RemoteMetadata {
     }
 
     private void urlToStream(URL url, long expectedSize, OutputStream target, ProgressReceiver cb) throws IOException {
-        URI requestUri;
-        try {
-            requestUri = url.toURI();
-        } catch (URISyntaxException e) { throw new IOException(e); }
-        HttpResponse<InputStream> httpResponse = DownloadTask.sendHttpRequest(requestUri);
-        long fileSize = Long.parseLong(httpResponse.headers().firstValue("Content-Length").orElse(Long.toString(expectedSize)));
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", "ResourcePackUpdater/" + ResourcePackUpdater.MOD_VERSION + " +https://www.zbx1425.cn");
+        connection.setRequestProperty("Accept-Encoding", "gzip");
+        connection.setConnectTimeout(20000);
+        connection.setReadTimeout(20000);
+
+        if (connection.getResponseCode() >= 400) {
+            throw new IOException("Server returned HTTP " + connection.getResponseCode() + " "
+                    + new String(IOUtils.toByteArray(connection.getErrorStream()), StandardCharsets.UTF_8));
+        }
+
+        long fileSize = connection.getContentLengthLong();
+        if (fileSize == -1) fileSize = expectedSize;
 
         long downloadedBytesBefore = downloadedBytes;
         try {
-            try (BufferedOutputStream bos = new BufferedOutputStream(target); InputStream inputStream = DownloadTask.unwrapHttpResponse(httpResponse)) {
+            try (BufferedOutputStream bos = new BufferedOutputStream(target);
+                 InputStream inputStream = DownloadTask.unwrapHttpResponse(connection)) {
                 final ProgressOutputStream pOfs = new ProgressOutputStream(bos, new ProgressOutputStream.WriteListener() {
                     long lastAmount = -1;
                     final long noticeDivisor = 8192;

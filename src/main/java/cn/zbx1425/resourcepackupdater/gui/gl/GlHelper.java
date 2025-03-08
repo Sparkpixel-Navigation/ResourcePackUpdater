@@ -9,7 +9,6 @@ import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
@@ -20,7 +19,7 @@ public class GlHelper {
         RenderSystem.clear(16640, Minecraft.ON_OSX);
     }
 
-    private static ShaderInstance previousShader;
+    private static Object previousShader;
     private static Matrix4f lastProjectionMat;
 
     public static void initGlStates() {
@@ -102,8 +101,8 @@ public class GlHelper {
         float CHAR_SPACING = 0f;
         float LINE_SPACING = 0.25f;
 
-        var x = x1;
-        var y = y1;
+        float x = x1;
+        float y = y1;
         for (char chr : text.toCharArray()) {
             if (chr == '\n') {
                 y += fontSize + LINE_SPACING * fontSize;
