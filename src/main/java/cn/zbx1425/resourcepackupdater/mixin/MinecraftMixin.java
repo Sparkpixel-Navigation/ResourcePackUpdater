@@ -7,15 +7,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.concurrent.CompletableFuture;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
 
-    @Inject(at = @At("HEAD"), method = "reloadResources()Ljava/util/concurrent/CompletableFuture;")
-    private void onReloadResources(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
+    @Inject(at = @At("HEAD"), method = "reloadDataPacks")
+    private void onReloadDataPacks(CallbackInfo ci) {
         ResourcePackUpdater.dispatchSyncWork();
         ResourcePackUpdater.modifyPackList();
     }
