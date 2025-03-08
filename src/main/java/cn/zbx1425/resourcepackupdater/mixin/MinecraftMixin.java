@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
 
-    @Inject(at = @At("HEAD"), method = "reloadDataPacks")
+    @Inject(at = @At("HEAD"), method = "reloadDataPacks(Lnet/minecraft/server/packs/repository/PackRepository;Ljava/util/List;)V")
     private void onReloadDataPacks(CallbackInfo ci) {
         ResourcePackUpdater.dispatchSyncWork();
         ResourcePackUpdater.modifyPackList();
