@@ -7,6 +7,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HashCache {
 
@@ -44,7 +45,7 @@ public class HashCache {
         try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(file)))) {
             stream.writeInt(1);
             stream.writeInt(entriesToSave.size());
-            for (var entry : entriesToSave.entrySet()) {
+            for (Map.Entry<String, FileProperty> entry : entriesToSave.entrySet()) {
                 stream.writeInt(entry.getKey().length());
                 stream.writeBytes(entry.getKey());
                 stream.writeLong(entry.getValue().mTime);

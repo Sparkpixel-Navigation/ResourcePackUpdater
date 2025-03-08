@@ -64,7 +64,7 @@ public class ProgressForm implements GlScreenForm {
 
     @Override
     public boolean shouldStopPausing() {
-        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_ESCAPE)) {
+        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 256)) {
             throw new GlHelper.MinecraftStoppingException();
         }
         return true;

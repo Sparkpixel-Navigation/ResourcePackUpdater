@@ -23,7 +23,7 @@ public class GlHelper {
     private static Matrix4f lastProjectionMat;
 
     public static void initGlStates() {
-        previousShader = RenderSystem.getShader();
+        previousShader = null;
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().setIdentity();

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class LocalMetadata {
 
@@ -43,9 +44,9 @@ public class LocalMetadata {
         if (!Files.isDirectory(basePath)) {
             Files.createDirectories(basePath);
         }
-        try (var walkStream = Files.walk(basePath)) {
-            for (var entry : walkStream.toList()) {
-                var relPath = basePath.relativize(entry).toString().replace('\\', '/');
+        try (Stream<Path> walkStream = Files.walk(basePath)) {
+            for (Path entry : walkStream.toList()) {
+                String relPath = basePath.relativize(entry).toString().replace('\\', '/');
                 if (relPath.equals(HASH_CACHE_FILE_NAME)) continue;
                 if (Files.isDirectory(entry)) {
                     dirs.add(relPath);
