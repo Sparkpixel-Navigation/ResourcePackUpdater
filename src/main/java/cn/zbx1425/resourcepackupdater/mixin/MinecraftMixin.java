@@ -14,14 +14,14 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
 
-    @Inject(at = @At("HEAD"), method = "reloadResourcePacks(Z)Ljava/util/concurrent/CompletableFuture;")
-    void reloadResourcePacks(boolean bl, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
+    @Inject(at = @At("HEAD"), method = "reloadResourcePacks()V")
+    private void onReloadResourcePacks(CallbackInfo ci) {
         ResourcePackUpdater.dispatchSyncWork();
         ResourcePackUpdater.modifyPackList();
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/PackRepository;openAllSelected()Ljava/util/List;"), method = "<init>")
-    void ctor(GameConfig gameConfig, CallbackInfo ci) {
+    private void ctor(GameConfig gameConfig, CallbackInfo ci) {
         ResourcePackUpdater.dispatchSyncWork();
         ResourcePackUpdater.modifyPackList();
     }
