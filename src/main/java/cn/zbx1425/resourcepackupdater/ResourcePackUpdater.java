@@ -16,8 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.http.HttpClient;
-import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,21 +36,6 @@ public class ResourcePackUpdater implements ModInitializer {
     public static final ResourceLocation CLIENT_VERSION_PACKET_ID = new ResourceLocation("zbx_rpu", "client_version");
 
     public static final JsonParser JSON_PARSER = new JsonParser();
-    public static final HttpClient HTTP_CLIENT;
-
-    static {
-        // PREVENTS HOST VALIDATION
-        final Properties props = System.getProperties();
-        props.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
-
-        ExecutorService HTTP_CLIENT_EXECUTOR = Executors.newFixedThreadPool(4);
-        HTTP_CLIENT = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(10))
-                .executor(HTTP_CLIENT_EXECUTOR)
-                .sslContext(DummyTrustManager.UNSAFE_CONTEXT)
-                .build();
-    }
 
     @Override
     public void onInitialize() {

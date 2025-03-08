@@ -7,6 +7,7 @@ import cn.zbx1425.resourcepackupdater.io.HashCache;
 import cn.zbx1425.resourcepackupdater.io.ProgressReceiver;
 import cn.zbx1425.resourcepackupdater.util.MismatchingVersionException;
 import cn.zbx1425.resourcepackupdater.util.MtrVersion;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
@@ -52,7 +53,7 @@ public class RemoteMetadata {
     public void fetch(ProgressReceiver cb) throws Exception {
         dirs.clear();
         files.clear();
-        var metadataObj = ResourcePackUpdater.JSON_PARSER.parse(
+        JsonObject metadataObj = ResourcePackUpdater.JSON_PARSER.parse(
                 httpGetString(baseUrl + "/metadata.json", cb)
         ).getAsJsonObject();
         assertMetadataVersion(metadataObj);
@@ -61,18 +62,18 @@ public class RemoteMetadata {
         if (metadataObj.has("encrypt")) encrypt = metadataObj.get("encrypt").getAsBoolean();
 
         if (metadataVersion == 1) {
-            for (var entry : metadataObj.get("dirs").getAsJsonObject().entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : metadataObj.get("dirs").getAsJsonObject().entrySet()) {
                 dirs.add(entry.getKey());
             }
-            for (var entry : metadataObj.get("files").getAsJsonObject().entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : metadataObj.get("files").getAsJsonObject().entrySet()) {
                 files.put(entry.getKey(), new FileProperty(entry.getValue().getAsJsonObject()));
             }
         } else if (metadataVersion == 2) {
             JsonObject contentObj = metadataObj.get("file_content").getAsJsonObject();
-            for (var entry : contentObj.get("dirs").getAsJsonObject().entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : contentObj.get("dirs").getAsJsonObject().entrySet()) {
                 dirs.add(entry.getKey());
             }
-            for (var entry : contentObj.get("files").getAsJsonObject().entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : contentObj.get("files").getAsJsonObject().entrySet()) {
                 files.put(entry.getKey(), new FileProperty(entry.getValue().getAsJsonObject()));
             }
         } else {
