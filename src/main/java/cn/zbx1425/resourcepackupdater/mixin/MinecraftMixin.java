@@ -14,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
 
-    @Inject(at = @At("HEAD"), method = "reloadResourcePacks(Z)Ljava/util/concurrent/CompletableFuture;")
-    private void onReloadResourcePacks(boolean bl, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
+    @Inject(at = @At("HEAD"), method = "reloadResources()Ljava/util/concurrent/CompletableFuture;")
+    private void onReloadResources(CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         ResourcePackUpdater.dispatchSyncWork();
         ResourcePackUpdater.modifyPackList();
     }
